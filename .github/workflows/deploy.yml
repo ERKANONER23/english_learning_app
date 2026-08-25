@@ -2,12 +2,18 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master] # Görseldeki ana dalınız master olduğu için güncellendi
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    
+    # Git deposuna ve Pages'e yazma yetkisi ekledik (Hata 128'i çözer)
+    permissions:
+      contents: write
+      pages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
