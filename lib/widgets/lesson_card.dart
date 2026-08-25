@@ -17,8 +17,10 @@ class LessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: Text(lesson.icon, style: const TextStyle(fontSize: 36)),

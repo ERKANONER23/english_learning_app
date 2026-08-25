@@ -2,49 +2,71 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lesson.dart';
 import '../models/lesson_result.dart';
-import '../data/lessons_1_20.dart'; // Yeni import
-import '../data/lessons_21_40.dart'; // Yeni import
+import '../data/lessons_1_20.dart';
+import '../data/lessons_21_40.dart';
 import '../data/lessons_41_60.dart';
-import '../data/lessons_61_80.dart'; // Yeni import
-import '../data/lessons_81_100.dart'; // Yeni import
-import '../data/lessons_101_120.dart'; // Yeni import
-import '../data/lessons_121_140.dart'; // Yeni import
-import '../data/lessons_141_160.dart'; // Yeni import
-import '../data/lessons_161_180.dart'; // Yeni import
+import '../data/lessons_61_80.dart';
+import '../data/lessons_81_100.dart';
+import '../data/lessons_101_120.dart';
+import '../data/lessons_121_140.dart';
+import '../data/lessons_141_160.dart';
+import '../data/lessons_161_180.dart';
 import '../data/lessons_181_200.dart';
-
+import '../models/question.dart';   // Bu satırı ekleyin
 
 class LessonProvider extends ChangeNotifier {
   List<Lesson> _lessons = [];
   Map<int, LessonResult> _completedLessons = {};
-  int _currentLessonId = 0;
+  bool _isDarkMode = false;
 
   LessonProvider() {
     _lessons = [
       ...Lessons1to20.getLessons(),
       ...Lessons21to40.getLessons(),
-      ...Lessons41to60.getLessons(), // Yeni eklenen satır
-      ...Lessons61to80.getLessons(), // Yeni eklenen satır
-      ...Lessons81to100.getLessons(), // Yeni eklenen satır
-      ...Lessons101to120.getLessons(), // Yeni eklenen satır
-      ...Lessons121to140.getLessons(), // Yeni eklenen satır
-      ...Lessons141to160.getLessons(), // Yeni eklenen satır
-      ...Lessons161to180.getLessons(), // Yeni eklenen satır
+      ...Lessons41to60.getLessons(),
+      ...Lessons61to80.getLessons(),
+      ...Lessons81to100.getLessons(),
+      ...Lessons101to120.getLessons(),
+      ...Lessons121to140.getLessons(),
+      ...Lessons141to160.getLessons(),
+      ...Lessons161to180.getLessons(),
       ...Lessons181to200.getLessons(),
-
-
     ];
     _loadProgress();
   }
 
   List<Lesson> get lessons => _lessons;
   Map<int, LessonResult> get completedLessons => _completedLessons;
+  bool get isDarkMode => _isDarkMode;
 
   bool isLessonCompleted(int lessonId) => _completedLessons.containsKey(lessonId);
 
   LessonResult? getResultForLesson(int lessonId) => _completedLessons[lessonId];
 
   int get totalXp => _completedLessons.values.fold(0, (sum, result) => sum + result.xpEarned);
+
+  // Tamamlanan ders sayısı
+  int get completedLessonCount => _completedLessons.length;
+
+  // Dark mode toggle
+  Future<void> toggleDarkMode() async {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark_mode', _isDarkMode);
+  }
+
+  // Test için tamamlanan derslerden soruları topla
+  List<Question> getQuestionsForTest({int maxQuestions = 20}) {
+    final allQuestions = <Question>[];
+    for (final lessonId in _completedLessons.keys) {
+      final lesson = _lessons.firstWhere((l) => l.id == lessonId);
+      allQuestions.addAll(lesson.questions);
+    }
+    if (allQuestions.isEmpty) return [];
+    allQuestions.shuffle();
+    return allQuestions.take(maxQuestions).toList();
+  }
 
   void completeLesson(int lessonId, int correctAnswers, int totalQuestions) {
     final lesson = _lessons.firstWhere((l) => l.id == lessonId);
@@ -64,6 +86,7 @@ class LessonProvider extends ChangeNotifier {
   Future<void> _loadProgress() async {
     final prefs = await SharedPreferences.getInstance();
     final completedIds = prefs.getStringList('completed_lessons') ?? [];
+    _isDarkMode = prefs.getBool('dark_mode') ?? false;
     for (final idStr in completedIds) {
       final id = int.tryParse(idStr);
       if (id != null) {
