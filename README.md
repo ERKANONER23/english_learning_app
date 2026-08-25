@@ -1,5 +1,8 @@
 # englishlearning
 
+uygulamanın web sürümüne erişmek için linke tıklayın
+https://erkanoner23.github.io/english_learning_app/
+
 A new Flutter project.
 
 ## Getting Started
