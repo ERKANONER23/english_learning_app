@@ -1,31 +1,31 @@
-name: Deploy to GitHub Pages
+name: Flutter Web Deploy
 
 on:
   push:
-    branches: [master]
-  workflow_dispatch:
+    branches:
+      - master
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.47.1'
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build web
-        run: flutter build web --base-href /english_learning_app/
+      - name: Build Web
+        run: flutter build web --base-href "/${{ github.event.repository.name }}/"
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: Peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
